@@ -65,7 +65,7 @@ found in the LICENSE file.
         <CommandBinding Command="{x:Static local:MainWindow.NewWindowWithOptionsCommand}" Executed="NewWindowWithOptionsCmdExecuted" CanExecute="CoreWebView2RequiringCmdsCanExecute"/>
     </Window.CommandBindings>
     <DockPanel>
-        <Menu DockPanel.Dock="Top">
+        <Menu DockPanel.Dock="Top" AllowDrop="True" DragOver="Menu_DragOver" Drop="Menu_Drop">
             <MenuItem Header="_File">
                 <MenuItem Header="_New Window" Command="ApplicationCommands.New"/>
                 <MenuItem Header="_New Window With Options" Command="{x:Static local:MainWindow.NewWindowWithOptionsCommand}"/>

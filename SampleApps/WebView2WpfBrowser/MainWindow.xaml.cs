@@ -1838,5 +1838,33 @@ namespace WebView2WpfBrowser
                 new MainWindow(dialog.CreationProperties).Show();
             }
         }
+
+        private void Menu_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = e.AllowedEffects;
+            e.Handled = true;
+
+            if (sender is UIElement uiElement)
+            {
+                var position = e.GetPosition(uiElement);
+                var result = VisualTreeHelper.HitTest(uiElement, position);
+                var menuItem = FindVisualParent<MenuItem>(result?.VisualHit);
+                if (menuItem?.HasItems == true)
+                {
+                    menuItem.IsSubmenuOpen = true;
+                }
+            }
+        }
+
+        private void Menu_Drop(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+
+            MessageBox.Show(this, $"'{e.Data.GetData(DataFormats.UnicodeText)}' dropped");
+        }
+
+        public static T FindVisualParent<T>(DependencyObject element)
+            where T : DependencyObject =>
+            element == null ? null : element as T ?? FindVisualParent<T>(VisualTreeHelper.GetParent(element));
     }
 }
