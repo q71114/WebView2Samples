@@ -117,6 +117,8 @@ namespace WebView2WpfBrowser
             DataContext = this;
             InitializeComponent();
             AttachControlEventHandlers(webView);
+
+            EnableDragAndDropForMenu();
         }
 
         public MainWindow(CoreWebView2CreationProperties creationProperties = null)
@@ -1812,7 +1814,7 @@ namespace WebView2WpfBrowser
         {
             try
             {
-                // <ToggleDefaultDownloadDialog>
+                // <ToggleDefaultDownloadDialog>bing
                 if (webView.CoreWebView2.IsDefaultDownloadDialogOpen)
                 {
                     webView.CoreWebView2.CloseDefaultDownloadDialog();
@@ -1836,6 +1838,32 @@ namespace WebView2WpfBrowser
             if (dialog.ShowDialog() == true)
             {
                 new MainWindow(dialog.CreationProperties).Show();
+            }
+        }
+
+        private void EnableDragAndDropForMenu()
+        {
+            this.mainMenu.AllowDrop = true;
+            this.mainMenu.DragOver += this.Menu_DragOver;
+
+            EnableDragAndDropForChildrenMenuItems(this.mainMenu);
+        }
+
+
+        private void EnableDragAndDropForChildrenMenuItems(ItemsControl itemsControl)
+        {
+            if (itemsControl.Items is null)
+            {
+                return;
+            }
+
+            foreach (var menuItem in itemsControl.Items.OfType<MenuItem>())
+            {
+                menuItem.AllowDrop = true;
+                menuItem.DragOver += this.Menu_DragOver;
+                menuItem.Drop += this.Menu_Drop;
+
+                EnableDragAndDropForChildrenMenuItems(menuItem);
             }
         }
 
