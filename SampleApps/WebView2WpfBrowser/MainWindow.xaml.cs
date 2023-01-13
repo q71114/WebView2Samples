@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -1540,6 +1541,8 @@ namespace WebView2WpfBrowser
                     shouldAttachEnvironmentEventHandlers = false;
                 }
 
+                webView.WebMessageReceived += WebMessageReceived;
+                webView.CoreWebView2.DOMContentLoaded += DOMContentLoaded;
                 webView.CoreWebView2.FrameCreated += WebView_HandleIFrames;
 
                 SetDefaultDownloadDialogPosition();
@@ -1587,16 +1590,64 @@ namespace WebView2WpfBrowser
         }
         // </BrowserProcessExited>
 
+        private const string ScriptToInject = "setInterval(function () { window.chrome.webview.postMessage({ Data: 'do something' }); }, 100); ";
         void WebView_HandleIFrames(object sender, CoreWebView2FrameCreatedEventArgs args)
         {
             _webViewFrames.Add(args.Frame);
+            args.Frame.WebMessageReceived += WebMessageReceived;
+            args.Frame.ContentLoading += (s, e) =>
+            {
+                FireAndForget(() => args.Frame.ExecuteScriptAsync(ScriptToInject));
+            };
             args.Frame.Destroyed += (frameDestroyedSender, frameDestroyedArgs) =>
             {
+                Debug.WriteLine($"Destroyed: frame '{args.Frame.Name}'");
                 var frameToRemove = _webViewFrames.SingleOrDefault(r => r.IsDestroyed() == 1);
                 if (frameToRemove != null)
                     _webViewFrames.Remove(frameToRemove);
             };
         }
+
+        private void DOMContentLoaded(object sender, CoreWebView2DOMContentLoadedEventArgs e)
+        {
+            FireAndForget(() => webView.ExecuteScriptAsync(ScriptToInject));
+        }
+
+        private int counter;
+
+        private void WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
+        {
+            string name = null;
+            Func<string, Task<string>> executeScript = null;
+            switch (sender)
+            {
+                case WebView2 webView2:
+                    name = "WebView2";
+                    executeScript = webView2.ExecuteScriptAsync;
+                    break;
+                case CoreWebView2Frame frame:
+                    name = $"frame '{frame.Name}'";
+                    executeScript = frame.ExecuteScriptAsync;
+                    break;
+            }
+
+            if (executeScript != null)
+            {
+                FireAndForget(
+                    async () =>
+                    {
+                        Interlocked.Increment(ref counter);
+                        Debug.WriteLine($"Before execute script in {name}");
+                        await executeScript($"console.log({counter});");
+                        Debug.WriteLine($"Script executed in {name}");
+                        Interlocked.Decrement(ref counter);
+                        Debug.WriteLine($"Currently waiting for {counter} script(s) to finish");
+                    });
+            }
+        }
+
+        private void FireAndForget(Func<Task> task) =>
+            Task.Factory.StartNew(task, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
 
         string WebViewFrames_ToString()
         {
