@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.Wpf;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,8 +26,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.Wpf;
 
 namespace WebView2WpfBrowser
 {
@@ -577,7 +577,8 @@ namespace WebView2WpfBrowser
                 saveFileDialog.InitialDirectory = "C:\\";
                 saveFileDialog.Filter = "Pdf Files|*.pdf";
                 Nullable<bool> result = saveFileDialog.ShowDialog();
-                if (result == true) {
+                if (result == true)
+                {
                     _isPrintToPdfInProgress = true;
                     bool isSuccessful = await webView.CoreWebView2.PrintToPdfAsync(
                         saveFileDialog.FileName, printSettings);
@@ -613,7 +614,7 @@ namespace WebView2WpfBrowser
         }
 
         // This example prints the current web page without a print dialog to default printer.
-        async void PrintToDefaultPrinter ()
+        async void PrintToDefaultPrinter()
         {
             string title = webView.CoreWebView2.DocumentTitle;
 
@@ -639,8 +640,8 @@ namespace WebView2WpfBrowser
             }
             catch (Exception)
             {
-               MessageBox.Show(this, "Printing " + title + " document already in progress",
-                        "Print");
+                MessageBox.Show(this, "Printing " + title + " document already in progress",
+                         "Print");
             }
         }
 
@@ -714,7 +715,7 @@ namespace WebView2WpfBrowser
                         "Print");
                 }
             }
-            catch(ArgumentException)
+            catch (ArgumentException)
             {
                 MessageBox.Show(this, "Invalid settings provided for the specified printer",
                     "Print");
@@ -1041,9 +1042,11 @@ namespace WebView2WpfBrowser
                     webView.CoreWebView2.Environment.CreateContextMenuItem(
                         "Display Page Uri", null,
                         CoreWebView2ContextMenuItemKind.Command);
-                    subItem.CustomItemSelected += delegate (object send, Object ex) {
+                    subItem.CustomItemSelected += delegate (object send, Object ex)
+                    {
                         string pageUrl = args.ContextMenuTarget.PageUri;
-                        System.Threading.SynchronizationContext.Current.Post((_) => {
+                        System.Threading.SynchronizationContext.Current.Post((_) =>
+                        {
                             MessageBox.Show(pageUrl, "Display Page Uri", MessageBoxButton.YesNo);
                         }, null);
                     };
@@ -1141,7 +1144,8 @@ namespace WebView2WpfBrowser
             }
         }
 
-        async void Webview2_FaviconChanged(object sender,object args) {
+        async void Webview2_FaviconChanged(object sender, object args)
+        {
             string value = webView.CoreWebView2.FaviconUri;
             System.IO.Stream stream = await webView.CoreWebView2.GetFaviconAsync(
               CoreWebView2FaviconImageFormat.Png);
@@ -1340,9 +1344,9 @@ namespace WebView2WpfBrowser
                     case CoreWebView2DownloadState.InProgress:
                         break;
                     case CoreWebView2DownloadState.Interrupted:
-                    // Here developer can take different actions based on `download.InterruptReason`.
-                    // For example, show an error message to the end user.
-                    break;
+                        // Here developer can take different actions based on `download.InterruptReason`.
+                        // For example, show an error message to the end user.
+                        break;
                     case CoreWebView2DownloadState.Completed:
                         break;
                 }
@@ -1492,7 +1496,7 @@ namespace WebView2WpfBrowser
 
         void WebView_ServerCertificateErrorDetected(object sender, CoreWebView2ServerCertificateErrorDetectedEventArgs e)
         {
-           CoreWebView2Certificate certificate = e.ServerCertificate;
+            CoreWebView2Certificate certificate = e.ServerCertificate;
 
             // Continues the request to a server with a TLS certificate if the error status
             // is of type `COREWEBVIEW2_WEB_ERROR_STATUS_CERTIFICATE_IS_INVALID`
@@ -1513,17 +1517,17 @@ namespace WebView2WpfBrowser
         // You may also choose to defer server certificate validation.
         bool ValidateServerCertificate(CoreWebView2Certificate certificate)
         {
-           // You may want to validate certificates in different ways depending on your app and
-           // scenario. One way might be the following:
-           // First, get the list of host app trusted certificates and its thumbprint.
-           //
-           // Then get the last chain element using `ICoreWebView2Certificate::get_PemEncodedIssuerCertificateChain`
-           // that contains the raw data of the untrusted root CA/self-signed certificate. Get the untrusted
-           // root CA/self signed certificate thumbprint from the raw certificate data and validate the thumbprint
-           // against the host app trusted certificate list.
-           //
-           // Finally, return true if it exists in the host app's certificate trusted list, or otherwise return false.
-           return true;
+            // You may want to validate certificates in different ways depending on your app and
+            // scenario. One way might be the following:
+            // First, get the list of host app trusted certificates and its thumbprint.
+            //
+            // Then get the last chain element using `ICoreWebView2Certificate::get_PemEncodedIssuerCertificateChain`
+            // that contains the raw data of the untrusted root CA/self-signed certificate. Get the untrusted
+            // root CA/self signed certificate thumbprint from the raw certificate data and validate the thumbprint
+            // against the host app trusted certificate list.
+            //
+            // Finally, return true if it exists in the host app's certificate trusted list, or otherwise return false.
+            return true;
         }
 
         // This example clears `AlwaysAllow` response that are added for proceeding with TLS certificate errors.
@@ -1718,12 +1722,12 @@ namespace WebView2WpfBrowser
             {
                 return e.Message;
             }
-			// Occurred when a 32-bit process wants to access the modules of a 64-bit process.
-			catch (Win32Exception e)
-			{
-				return e.Message;
-			}
-		}
+            // Occurred when a 32-bit process wants to access the modules of a 64-bit process.
+            catch (Win32Exception e)
+            {
+                return e.Message;
+            }
+        }
 
         private string GetStartPageUri(CoreWebView2 webView2)
         {
@@ -1765,6 +1769,7 @@ namespace WebView2WpfBrowser
                 // <PermissionRequested>
                 webView.CoreWebView2.PermissionRequested += WebView_PermissionRequested;
                 // </PermissionRequested>
+                webView.CoreWebView2.ContextMenuRequested += CoreWebView2_ContextMenuRequested;
                 // The CoreWebView2Environment instance is reused when re-assigning CoreWebView2CreationProperties
                 // to the replacement control. We don't need to re-attach the event handlers unless the environment
                 // instance has changed.
@@ -1798,6 +1803,13 @@ namespace WebView2WpfBrowser
 
             MessageBox.Show($"WebView2 creation failed with exception = {e.InitializationException}");
         }
+        private void CoreWebView2_ContextMenuRequested(object sender, CoreWebView2ContextMenuRequestedEventArgs e)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            System.Threading.Thread.Sleep(4);
+            Debug.WriteLine($"Milliseconds passed: {stopwatch.ElapsedMilliseconds}");
+        }
+
         private void SetDefaultDownloadDialogPosition()
         {
             try
@@ -1813,7 +1825,7 @@ namespace WebView2WpfBrowser
                 webView.CoreWebView2.DefaultDownloadDialogMargin = margin;
                 // </SetDefaultDownloadDialogPosition>
             }
-            catch (NotImplementedException) {}
+            catch (NotImplementedException) { }
         }
 
         // <BrowserProcessExited>
@@ -2126,7 +2138,7 @@ namespace WebView2WpfBrowser
                     }
                 };
             }
-            catch (NotImplementedException) {}
+            catch (NotImplementedException) { }
         }
         private void ToggleDownloadDialog(object target, RoutedEventArgs e)
         {
@@ -2379,7 +2391,8 @@ namespace WebView2WpfBrowser
         // </SharedBuffer>
 
         // Prompt the user for some script and register it to execute whenever a new page loads.
-        private async void AddInitializeScriptCmdExecuted(object sender, ExecutedRoutedEventArgs e) {
+        private async void AddInitializeScriptCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
             TextInputDialog dialog = new TextInputDialog(
               title: "Add Initialize Script",
               description: "Enter the JavaScript code to run as the initialization script that runs before any script in the HTML document.",
@@ -2393,19 +2406,20 @@ namespace WebView2WpfBrowser
             {
                 try
                 {
-                  string scriptId = await webView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(dialog.Input.Text);
-                  m_lastInitializeScriptId = scriptId;
-                  MessageBox.Show(this, scriptId, "AddScriptToExecuteOnDocumentCreated Id");
+                    string scriptId = await webView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(dialog.Input.Text);
+                    m_lastInitializeScriptId = scriptId;
+                    MessageBox.Show(this, scriptId, "AddScriptToExecuteOnDocumentCreated Id");
                 }
                 catch (Exception ex)
                 {
-                  MessageBox.Show(this, ex.ToString(), "AddScriptToExecuteOnDocumentCreated failed");
+                    MessageBox.Show(this, ex.ToString(), "AddScriptToExecuteOnDocumentCreated failed");
                 }
             }
         }
 
         // Prompt the user for an initialization script ID and deregister that script.
-        private void RemoveInitializeScriptCmdExecuted(object sender, ExecutedRoutedEventArgs e) {
+        private void RemoveInitializeScriptCmdExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
             TextInputDialog dialog = new TextInputDialog(
               title: "Remove Initialize Script",
               description: "Enter the ID created from Add Initialize Script.",
@@ -2416,20 +2430,25 @@ namespace WebView2WpfBrowser
                 // check valid
                 try
                 {
-                  Int64 result = Int64.Parse(scriptId);
-                  Int64 lastId = Int64.Parse(m_lastInitializeScriptId);
-                  if (result > lastId) {
-                    MessageBox.Show(this, scriptId, "Invalid ScriptId, should be less or equal than " + m_lastInitializeScriptId);
-                  } else {
-                    webView.CoreWebView2.RemoveScriptToExecuteOnDocumentCreated(scriptId);
-                    if (result == lastId && lastId >= 2) {
-                      m_lastInitializeScriptId = (lastId - 1).ToString();
+                    Int64 result = Int64.Parse(scriptId);
+                    Int64 lastId = Int64.Parse(m_lastInitializeScriptId);
+                    if (result > lastId)
+                    {
+                        MessageBox.Show(this, scriptId, "Invalid ScriptId, should be less or equal than " + m_lastInitializeScriptId);
                     }
-                    MessageBox.Show(this, scriptId, "RemoveScriptToExecuteOnDocumentCreated Id");
-                  }
+                    else
+                    {
+                        webView.CoreWebView2.RemoveScriptToExecuteOnDocumentCreated(scriptId);
+                        if (result == lastId && lastId >= 2)
+                        {
+                            m_lastInitializeScriptId = (lastId - 1).ToString();
+                        }
+                        MessageBox.Show(this, scriptId, "RemoveScriptToExecuteOnDocumentCreated Id");
+                    }
                 }
-                catch (FormatException) {
-                  MessageBox.Show(this, scriptId, "Invalid ScriptId, should be Integer");
+                catch (FormatException)
+                {
+                    MessageBox.Show(this, scriptId, "Invalid ScriptId, should be Integer");
 
                 }
             }
@@ -2437,54 +2456,57 @@ namespace WebView2WpfBrowser
         // Prompt the user for the name and parameters of a CDP method, then call it.
         private async void CallCdpMethodCmdExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-          TextInputDialog dialog = new TextInputDialog(
-            title: "Call CDP Method",
-            description: "Enter the CDP method name to call, followed by a space,\r\n" +
-              "followed by the parameters in JSON format.",
-            defaultInput: "Runtime.evaluate {\"expression\":\"alert(\\\"test\\\")\"}"
-          );
-          if (dialog.ShowDialog() == true)
-          {
-            string[] words = dialog.Input.Text.Trim().Split(' ');
-            if (words.Length == 1 && words[0] == "") {
-              MessageBox.Show(this, "Invalid argument:" + dialog.Input.Text, "CDP Method call failed");
-              return;
-            }
-            string methodName = words[0];
-            string methodParams = (words.Length == 2 ? words[1] : "{}");
+            TextInputDialog dialog = new TextInputDialog(
+              title: "Call CDP Method",
+              description: "Enter the CDP method name to call, followed by a space,\r\n" +
+                "followed by the parameters in JSON format.",
+              defaultInput: "Runtime.evaluate {\"expression\":\"alert(\\\"test\\\")\"}"
+            );
+            if (dialog.ShowDialog() == true)
+            {
+                string[] words = dialog.Input.Text.Trim().Split(' ');
+                if (words.Length == 1 && words[0] == "")
+                {
+                    MessageBox.Show(this, "Invalid argument:" + dialog.Input.Text, "CDP Method call failed");
+                    return;
+                }
+                string methodName = words[0];
+                string methodParams = (words.Length == 2 ? words[1] : "{}");
 
-            try
-            {
-              string cdpResult = await webView.CoreWebView2.CallDevToolsProtocolMethodAsync(methodName, methodParams);
-              MessageBox.Show(this, cdpResult, "CDP method call successfully");
+                try
+                {
+                    string cdpResult = await webView.CoreWebView2.CallDevToolsProtocolMethodAsync(methodName, methodParams);
+                    MessageBox.Show(this, cdpResult, "CDP method call successfully");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, ex.ToString(), "CDP method call failed");
+                }
             }
-            catch (Exception ex)
-            {
-              MessageBox.Show(this, ex.ToString(), "CDP method call failed");
-            }
-          }
         }
 
         private void OpenDevToolsCmdExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-          try
-          {
-            webView.CoreWebView2.OpenDevToolsWindow();
-          }
-          catch (Exception ex) {
-            MessageBox.Show(this, ex.ToString(), "Open DevTools Window failed");
-          }
+            try
+            {
+                webView.CoreWebView2.OpenDevToolsWindow();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.ToString(), "Open DevTools Window failed");
+            }
         }
 
         private void OpenTaskManagerCmdExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-          try
-          {
-            webView.CoreWebView2.OpenTaskManagerWindow();
-          }
-          catch (Exception ex) {
-            MessageBox.Show(this, ex.ToString(), "Open Task Manager Window failed");
-          }
+            try
+            {
+                webView.CoreWebView2.OpenTaskManagerWindow();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.ToString(), "Open Task Manager Window failed");
+            }
         }
 
 
@@ -2525,7 +2547,8 @@ namespace WebView2WpfBrowser
                 description: "Enter some JavaScript to be executed in the context of this page, and get the error info when execution failed",
                 defaultInput: ""
             );
-            if (dialog.ShowDialog() == true) {
+            if (dialog.ShowDialog() == true)
+            {
                 var result = await webView.CoreWebView2.ExecuteScriptWithResultAsync(dialog.Input.Text);
                 if (result.Succeeded)
                 {
@@ -2537,11 +2560,13 @@ namespace WebView2WpfBrowser
                     {
                         MessageBox.Show(this, str, "ExecuteScript String Result");
                     }
-                    else {
+                    else
+                    {
                         MessageBox.Show(this, "Get string failed", "ExecuteScript String Result");
                     }
                 }
-                else {
+                else
+                {
                     var exception = result.Exception;
                     MessageBox.Show(this, exception.Name, "ExecuteScript Exception Name");
                     MessageBox.Show(this, exception.Message, "ExecuteScript Exception Message");
