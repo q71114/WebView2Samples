@@ -185,6 +185,24 @@ namespace WebView2WpfBrowser
 
         public CoreWebView2CreationProperties CreationProperties { get; set; } = null;
 
+        private readonly DispatcherTimer timer;
+
+        private void TimerTick(object sender, EventArgs e)
+        {
+            if (webView.IsInitialized)
+            {
+                FireAndForget(() => webView.ExecuteScriptAsync("console.log('stuff happening');"));
+            }
+        }
+
+        private void FireAndForget(Func<Task> task) =>
+            Task.Factory.StartNew(task, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
+
+        private void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            Debug.WriteLine($"IsUserInitiated: {e.IsUserInitiated}");
+        }
+
         public MainWindow()
         {
             DataContext = this;
@@ -192,6 +210,7 @@ namespace WebView2WpfBrowser
             AttachControlEventHandlers(webView);
             // Set background transparent
             webView.DefaultBackgroundColor = System.Drawing.Color.Transparent;
+            timer = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.Background, new EventHandler(TimerTick), Dispatcher.CurrentDispatcher);
         }
 
         public MainWindow(CoreWebView2CreationProperties creationProperties = null)
@@ -202,6 +221,7 @@ namespace WebView2WpfBrowser
             AttachControlEventHandlers(webView);
             // Set background transparent
             webView.DefaultBackgroundColor = System.Drawing.Color.Transparent;
+            timer = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.Background, new EventHandler(TimerTick), Dispatcher.CurrentDispatcher);
         }
 
         void AttachControlEventHandlers(WebView2 control)
@@ -1753,21 +1773,7 @@ namespace WebView2WpfBrowser
 			}
 		}
 
-        private string GetStartPageUri(CoreWebView2 webView2)
-        {
-            string uri = "https://appassets.example/AppStartPage.html";
-            if (webView2 == null)
-            {
-                return uri;
-            }
-            string sdkBuildVersion = GetSdkBuildVersion(),
-                   runtimeVersion = GetRuntimeVersion(webView2),
-                   appPath = GetAppPath(),
-                   runtimePath = GetRuntimePath(webView2);
-            string newUri = $"{uri}?sdkBuild={sdkBuildVersion}&runtimeVersion={runtimeVersion}" +
-                $"&appPath={appPath}&runtimePath={runtimePath}";
-            return newUri;
-        }
+        private string GetStartPageUri(CoreWebView2 webView2) => "https://permission.site";
 
         void WebView_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
         {
@@ -1795,6 +1801,7 @@ namespace WebView2WpfBrowser
                 // </PermissionRequested>
                 webView.CoreWebView2.DOMContentLoaded += WebView_PermissionManager_DOMContentLoaded;
                 webView.CoreWebView2.WebMessageReceived += WebView_PermissionManager_WebMessageReceived;
+                webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
 
                 // The CoreWebView2Environment instance is reused when re-assigning CoreWebView2CreationProperties
                 // to the replacement control. We don't need to re-attach the event handlers unless the environment
