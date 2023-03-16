@@ -15,3 +15,5 @@ ARM64/
 
 bin/
 obj/
+/SampleApps/WebView2Installer/AppPackages
+/SampleApps/WebView2Installer/BundleArtifacts
